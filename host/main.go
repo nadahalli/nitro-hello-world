@@ -254,7 +254,7 @@ func parseAttestationDocumentGo(doc []byte) (map[string]string, error) {
 			}
 		}
 
-		pcrTable[fmt.Sprintf("%d", pcrIndex)] = fmt.Sprintf("%x", pcrValueBytes) // Format as hex string
+		pcrTable[fmt.Sprintf("%d", pcrIndex)] = hex.EncodeToString(pcrValueBytes)
 	}
 
 	return pcrTable, nil
@@ -280,12 +280,17 @@ func GetInstanceID(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("failed to get instance identity document: %w", err)
 	}
 
+	log.Printf("InstanceID: %s\n", doc.InstanceID)
+
 	return doc.InstanceID, nil
 }
 
 func CalculateSHA384(input string) string {
 	// Create a new SHA-384 hash object
 	h := sha512.New384()
+
+	nullBytes := make([]byte, 48) // Create a slice of 48 null bytes (defaults to 0)
+	h.Write(nullBytes)      // Update the hash with the null bytes
 
 	// Write the input string as bytes to the hash object
 	h.Write([]byte(input))
